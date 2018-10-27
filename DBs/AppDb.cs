@@ -9,7 +9,7 @@ namespace testWebAPI.DBs
 
         public AppDb()
         {
-            Connection = new MySqlConnection("server=127.0.0.1;user id=testapi;password='';port=8889;database=testAPIdb");
+            Connection = new MySqlConnection("server=localhost;user id=testapi;password='';port=8889;database=testAPIdb");
         }
 
         public void Dispose()

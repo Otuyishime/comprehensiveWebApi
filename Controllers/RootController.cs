@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using testWebAPI.Models;
+using testWebAPI.Models.Resources;
 
 // ****************************
 //     THE ROUTE OF THE API
@@ -17,10 +19,11 @@ namespace testWebAPI.Controllers
         [HttpGet(Name = nameof(GetRoot))]
         public IActionResult GetRoot()
         {
-            var response = new
+            var response = new RootResponse
             {
-                href = Url.Link(nameof(GetRoot), null),
-                info = new { href = Url.Link(nameof(InfoController.GetInfo), null) }
+                Self = Link.To(nameof(this.GetRoot)),
+                Rooms = Link.To(nameof(RoomsController.GetRooms)),
+                Info = Link.To(nameof(InfoController.GetInfo))
             };
 
             return Ok(response);

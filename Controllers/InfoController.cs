@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using testWebAPI.Models;
 using testWebAPI.Models.Resources;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -24,7 +25,7 @@ namespace testWebAPI.Controllers
         [HttpGet(Name = nameof(GetInfo))]
         public IActionResult GetInfo()
         {
-            _hotelInfo.Href = Url.Link(nameof(GetInfo), null);
+            _hotelInfo.Self = Link.To(nameof(GetInfo));
             return Ok(_hotelInfo);
         }
     }

@@ -48,8 +48,9 @@ namespace testWebAPI
 
             services.AddMvc(opt =>
             {
-                // Add the JsonException Filter
+                // Add Filters
                 opt.Filters.Add(typeof(JsonExceptionFilter));
+                opt.Filters.Add(typeof(LinkRewritingFilter));
 
                 // configure the Ion formatter, more details about Ion Specification vist https://ionspec.org/
                 var jsonOutputFormatter = opt.OutputFormatters.OfType<JsonOutputFormatter>().Single();

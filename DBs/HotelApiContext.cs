@@ -10,5 +10,7 @@ namespace testWebAPI.DBs
 
         // Add all the dbSets/Tables that wil be tracked by the context
         public DbSet<RoomEntity> Rooms { get; set; }
+
+        public DbSet<BookingEntity> Bookings { get; set; }
     }
 }

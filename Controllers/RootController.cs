@@ -22,7 +22,7 @@ namespace testWebAPI.Controllers
             var response = new RootResponse
             {
                 Self = Link.To(nameof(this.GetRoot)),
-                Rooms = Link.To(nameof(RoomsController.GetRooms)),
+                Rooms = Link.To(nameof(RoomsController.GetRoomsAsync)),
                 Info = Link.To(nameof(InfoController.GetInfo))
             };
 

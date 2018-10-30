@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using testWebAPI.DBs;
 using testWebAPI.Models.Resources;
@@ -22,6 +23,12 @@ namespace testWebAPI.Models.Services
         {
             var entity = await _hotelApiContext.Rooms.SingleOrDefaultAsync(r => r.Id == roomId, cancellationToken);
             return entity == null ? null : Mapper.Map<Room>(entity);
+        }
+
+        public async Task<IEnumerable<Room>> GetRoomsAsync(CancellationToken cancellationToken)
+        {
+            var query = _hotelApiContext.Rooms.ProjectTo<Room>(); // this is from auto-mapper
+            return await query.ToArrayAsync();
         }
     }
 }

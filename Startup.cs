@@ -13,10 +13,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using testWebAPI.Data;
 using testWebAPI.DBs;
 using testWebAPI.Filters;
 using testWebAPI.Formatters;
 using testWebAPI.Infrastructure;
+using testWebAPI.Models;
+using testWebAPI.Models.Entities;
 using testWebAPI.Models.Resources;
 using testWebAPI.Models.Services;
 
@@ -70,6 +73,7 @@ namespace testWebAPI
             });
 
             // Load data from the configuration file and put data into IOption
+            services.Configure<HotelOptions>(_configurationRoot);
             services.Configure<HotelInfo>(_configurationRoot.GetSection("Info"));
 
             // Add mysql db
@@ -85,6 +89,9 @@ namespace testWebAPI
             // configure Servces for Dependency Injection
             // Since EF DbContext has scoped lifetime, any service using it has to be scoped as well
             services.AddScoped<IRoomService, DefaultRoomService>();
+            services.AddScoped<IOpeningService, DefaultOpeningService>();
+            services.AddScoped<IBookingService, DefaultBookingService>();
+            services.AddScoped<IDateLogicService, DefaultDateLogicService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -107,8 +114,10 @@ namespace testWebAPI
                 using (var scope = scopeFactory.CreateScope())
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<HotelApiContext>();
+                    var dateLogicService = scope.ServiceProvider.GetRequiredService<IDateLogicService>();
+
                     // Add test data
-                    SeedTestData(dbContext);
+                    SeedTestData(dbContext, dateLogicService);
                 }
             }
 
@@ -131,18 +140,46 @@ namespace testWebAPI
             });
         }
 
-        private static void SeedTestData(HotelApiContext context)
+        private static void SeedTestData(HotelApiContext context, IDateLogicService dateLogicService)
         {
-            context.Rooms.Add(new Models.Entities.RoomEntity
+            // Add random Data
+            //foreach(var randomData in RandomTestData.GetData())
+            //{
+            //    context.Rooms.Add(new Models.Entities.RoomEntity
+            //    {
+            //        Id = Guid.Parse(randomData.Id),
+            //        Name = randomData.Name,
+            //        Rate = randomData.Rate
+            //    });
+            //}
+            //context.SaveChanges();
+
+            var oxford = context.Rooms.Add(new RoomEntity
             {
-                Id = Guid.Parse("1f232c71-e314-482b-9272-a2ef02db8ce2"),
-                Name = "MainTown Suite",
-                Rate = 13499
+                Id = Guid.Parse("301df04d-8679-4b1b-ab92-0a586ae53d08"),
+                Name = "Oxford Suite",
+                Rate = 10119,
+            }).Entity;
+
+            context.Rooms.Add(new RoomEntity
+            {
+                Id = Guid.Parse("ee2b83be-91db-4de5-8122-35a9e9195976"),
+                Name = "Driscoll Suite",
+                Rate = 23959
             });
-            context.Rooms.Add(new Models.Entities.RoomEntity {
-                Id = Guid.Parse("7bcc1f44-b9c7-4dc6-8fbd-cea92b190802"),
-                Name = "Memorial Lounge",
-                Rate = 15499
+
+            var today = DateTimeOffset.Now;
+            var start = dateLogicService.AlignStartTime(today);
+            var end = start.Add(dateLogicService.GetMinimumStay());
+
+            context.Bookings.Add(new BookingEntity
+            {
+                Id = Guid.Parse("2eac8dea-2749-42b3-9d21-8eb2fc0fd6bd"),
+                Room = oxford,
+                CreatedAt = DateTimeOffset.UtcNow,
+                StartAt = start,
+                EndAt = end,
+                Total = oxford.Rate,
             });
 
             context.SaveChanges();

@@ -22,7 +22,7 @@ namespace testWebAPI.Models.Services
             _dateLogicService = dateLogicService;
         }
 
-        public async Task<IEnumerable<Opening>> GetOpeningsAsync(CancellationToken cancellationToken)
+        public async Task<PagedResults<Opening>> GetOpeningsAsync(PagingOptions pagingOptions, CancellationToken cancellationToken)
         {
             var rooms = await _context.Rooms.ToArrayAsync();
 
@@ -56,7 +56,13 @@ namespace testWebAPI.Models.Services
                 allOpenings.AddRange(openings);
             }
 
-            return allOpenings;
+            var pagedOpenings = allOpenings.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
+
+            return new PagedResults<Opening>
+            {
+                Items = pagedOpenings,
+                TotalSize = allOpenings.Count
+            };
         }
 
         public async Task<IEnumerable<BookingRange>> GetConflictingSlots(

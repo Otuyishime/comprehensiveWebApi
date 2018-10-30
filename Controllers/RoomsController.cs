@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using testWebAPI.DBs;
 using testWebAPI.Models;
 using testWebAPI.Models.Resources;
@@ -19,11 +20,13 @@ namespace testWebAPI.Controllers
     {
         private readonly IRoomService _roomService;
         private readonly IOpeningService _openingService;
+        private readonly PagingOptions _defaultPagingOptions;
 
-        public RoomsController(IRoomService roomService, IOpeningService openingService)
+        public RoomsController(IRoomService roomService, IOpeningService openingService, IOptions<PagingOptions> defaultPagingOptions)
         {
             _roomService = roomService;
             _openingService = openingService;
+            _defaultPagingOptions = defaultPagingOptions.Value;
         }
 
         // GET: api/rooms
@@ -43,15 +46,22 @@ namespace testWebAPI.Controllers
 
         // GET /rooms/openings
         [HttpGet("openings", Name = nameof(GetAllRoomOpeningsAsync))]
-        public async Task<IActionResult> GetAllRoomOpeningsAsync(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAllRoomOpeningsAsync([FromQuery] PagingOptions pagingOptions, CancellationToken cancellationToken)
         {
-            var openings = await _openingService.GetOpeningsAsync(cancellationToken);
+            if(!ModelState.IsValid){
+                return BadRequest(new ApiError(ModelState));
+            }
 
-            var collection = new Collection<Opening>()
-            {
-                Self = Link.ToCollection(nameof(GetAllRoomOpeningsAsync)),
-                Value = openings.ToArray()
-            };
+            pagingOptions.Offset = pagingOptions.Offset ?? _defaultPagingOptions.Offset;
+            pagingOptions.Limit = pagingOptions.Limit ?? _defaultPagingOptions.Limit;
+
+            var openings = await _openingService.GetOpeningsAsync(pagingOptions, cancellationToken);
+            var collection = PagedCollection<Opening>.Create(
+                Link.ToCollection(nameof(GetAllRoomOpeningsAsync)),
+                openings.Items.ToArray(),
+                openings.TotalSize,
+                pagingOptions
+            );
 
             return Ok(collection);
         }

@@ -72,10 +72,6 @@ namespace testWebAPI
                 opt.ApiVersionSelector = new CurrentImplementationApiVersionSelector(opt);
             });
 
-            // Load data from the configuration file and put data into IOption
-            services.Configure<HotelOptions>(_configurationRoot);
-            services.Configure<HotelInfo>(_configurationRoot.GetSection("Info"));
-
             // Add mysql db
             services.AddTransient<AppDb>(_ => new AppDb());
 
@@ -85,6 +81,11 @@ namespace testWebAPI
 
             // use lower case controller names
             services.AddRouting(opt => opt.LowercaseUrls = true);
+
+            // Load data from the configuration file and put data into IOption
+            services.Configure<HotelOptions>(_configurationRoot);
+            services.Configure<HotelInfo>(_configurationRoot.GetSection("Info"));
+            services.Configure<PagingOptions>(_configurationRoot.GetSection("DefaultPagingOptions"));
 
             // configure Servces for Dependency Injection
             // Since EF DbContext has scoped lifetime, any service using it has to be scoped as well

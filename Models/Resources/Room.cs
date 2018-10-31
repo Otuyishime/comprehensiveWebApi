@@ -8,7 +8,7 @@ namespace testWebAPI.Models.Resources
         [Sortable]
         public string Name { get; set; }
 
-        [Sortable]
+        [Sortable(Default = true)]  // make the rate the default sort property 
         public Decimal Rate { get; set; }
     }
 }

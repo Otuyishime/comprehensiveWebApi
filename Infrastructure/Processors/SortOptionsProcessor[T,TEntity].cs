@@ -65,6 +65,12 @@ namespace testWebAPI.Infrastructure.Processors
         public IQueryable<TEntity> Apply(IQueryable<TEntity> query)
         {
             var terms = GetValidTerms().ToArray();
+
+            if (!terms.Any())
+            {
+                terms = GetTermsFromModel().Where(t => t.Default).ToArray();
+            }
+
             if (!terms.Any()) return query;
 
             var modifiedQuery = query;
@@ -100,6 +106,10 @@ namespace testWebAPI.Infrastructure.Processors
             => typeof(T).GetTypeInfo()
             .DeclaredProperties
             .Where(p => p.GetCustomAttributes<SortableAttribute>().Any())
-            .Select(p => new SortTerm { Name = p.Name });
+            .Select(p => new SortTerm
+            {
+                Name = p.Name,
+                Default = p.GetCustomAttribute<SortableAttribute>().Default
+            });
     }
 }

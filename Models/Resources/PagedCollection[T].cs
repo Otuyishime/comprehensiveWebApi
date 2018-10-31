@@ -27,8 +27,11 @@ namespace testWebAPI.Models.Resources
         public Link Last { get; set; }
 
         public static PagedCollection<T> Create(Link self, T[] items, int size, PagingOptions pagingOptions)
-        {
-            return new PagedCollection<T>
+            => Create<PagedCollection<T>>(self, items, size, pagingOptions);
+
+        public static TResponse Create<TResponse>(Link self, T[] items, int size, PagingOptions pagingOptions)
+            where TResponse : PagedCollection<T>, new()
+            => new TResponse
             {
                 Self = self,
                 Value = items,
@@ -40,7 +43,6 @@ namespace testWebAPI.Models.Resources
                 Previous = GetPreviousLink(self, size, pagingOptions),
                 Last = GetLastLink(self, size, pagingOptions)
             };
-        }
 
         private static Link GetNextLink(Link self, int size, PagingOptions pagingOptions)
         {

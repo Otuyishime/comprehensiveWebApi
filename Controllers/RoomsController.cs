@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using testWebAPI.DBs;
 using testWebAPI.Models;
+using testWebAPI.Models.Entities;
 using testWebAPI.Models.Resources;
 using testWebAPI.Models.Services;
 
@@ -31,22 +32,33 @@ namespace testWebAPI.Controllers
 
         // GET: api/rooms
         [HttpGet(Name = nameof(GetRoomsAsync))]
-        public async Task<IActionResult> GetRoomsAsync(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetRoomsAsync(
+            [FromQuery] PagingOptions pagingOptions,
+            CancellationToken cancellationToken)
         {
-            var rooms = await _roomService.GetRoomsAsync(cancellationToken);
+            if (!ModelState.IsValid) return BadRequest(new ApiError(ModelState));
 
-            var collectionLink = Link.ToCollection(nameof(GetRoomsAsync));
-            var collection = new Collection<Room> {
-                Self = collectionLink,
-                Value = rooms.ToArray()
-            };
+            pagingOptions.Offset = pagingOptions.Offset ?? _defaultPagingOptions.Offset;
+            pagingOptions.Limit = pagingOptions.Limit ?? _defaultPagingOptions.Limit;
+
+            var rooms = await _roomService.GetRoomsAsync(pagingOptions, cancellationToken);
+
+            var collection = PagedCollection<Room>.Create<RoomsResponse>(
+                Link.ToCollection(nameof(GetRoomsAsync)),
+                rooms.Items.ToArray(),
+                rooms.TotalSize,
+                pagingOptions);
+            collection.Openings = Link.ToCollection(nameof(GetAllRoomOpeningsAsync));
 
             return Ok(collection);
         }
 
         // GET /rooms/openings
         [HttpGet("openings", Name = nameof(GetAllRoomOpeningsAsync))]
-        public async Task<IActionResult> GetAllRoomOpeningsAsync([FromQuery] PagingOptions pagingOptions, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAllRoomOpeningsAsync(
+            [FromQuery] PagingOptions pagingOptions,
+            CancellationToken cancellationToken
+        )
         {
             if(!ModelState.IsValid){
                 return BadRequest(new ApiError(ModelState));

@@ -10,6 +10,6 @@ namespace testWebAPI.Models.Services
     {
         Task<Room> GetRoomAsync(Guid roomId, CancellationToken cancellationToken);
 
-        Task<IEnumerable<Room>> GetRoomsAsync(CancellationToken cancellationToken);
+        Task<PagedResults<Room>> GetRoomsAsync(PagingOptions pagingOptions, CancellationToken cancellationToken);
     }
 }

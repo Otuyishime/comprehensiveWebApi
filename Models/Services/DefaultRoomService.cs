@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using testWebAPI.DBs;
+using testWebAPI.Models.Entities;
 using testWebAPI.Models.Resources;
 
 namespace testWebAPI.Models.Services
@@ -25,10 +27,25 @@ namespace testWebAPI.Models.Services
             return entity == null ? null : Mapper.Map<Room>(entity);
         }
 
-        public async Task<IEnumerable<Room>> GetRoomsAsync(CancellationToken cancellationToken)
+        public async Task<PagedResults<Room>> GetRoomsAsync(
+            PagingOptions pagingOptions,
+            CancellationToken cancellationToken)
         {
-            var query = _hotelApiContext.Rooms.ProjectTo<Room>(); // this is from auto-mapper
-            return await query.ToArrayAsync();
+            IQueryable<RoomEntity> query = _hotelApiContext.Rooms;
+
+            var size = await query.CountAsync(cancellationToken);
+
+            var items = await query
+                .Skip(pagingOptions.Offset.Value)
+                .Take(pagingOptions.Limit.Value)
+                .ProjectTo<Room>()
+                .ToArrayAsync(cancellationToken);
+
+            return new PagedResults<Room>
+            {
+                Items = items,
+                TotalSize = size
+            };
         }
     }
 }

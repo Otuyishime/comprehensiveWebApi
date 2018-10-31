@@ -34,6 +34,7 @@ namespace testWebAPI.Controllers
         [HttpGet(Name = nameof(GetRoomsAsync))]
         public async Task<IActionResult> GetRoomsAsync(
             [FromQuery] PagingOptions pagingOptions,
+            [FromQuery] SortOptions<Room, RoomEntity> sortOptions,
             CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid) return BadRequest(new ApiError(ModelState));
@@ -41,7 +42,7 @@ namespace testWebAPI.Controllers
             pagingOptions.Offset = pagingOptions.Offset ?? _defaultPagingOptions.Offset;
             pagingOptions.Limit = pagingOptions.Limit ?? _defaultPagingOptions.Limit;
 
-            var rooms = await _roomService.GetRoomsAsync(pagingOptions, cancellationToken);
+            var rooms = await _roomService.GetRoomsAsync(pagingOptions, sortOptions, cancellationToken);
 
             var collection = PagedCollection<Room>.Create<RoomsResponse>(
                 Link.ToCollection(nameof(GetRoomsAsync)),

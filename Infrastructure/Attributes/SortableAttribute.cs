@@ -1,10 +1,8 @@
 ﻿using System;
 namespace testWebAPI.Infrastructure.Attributes
 {
-    public class SortableAttribute
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+    public class SortableAttribute : Attribute
     {
-        public SortableAttribute()
-        {
-        }
     }
 }

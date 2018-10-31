@@ -29,9 +29,11 @@ namespace testWebAPI.Models.Services
 
         public async Task<PagedResults<Room>> GetRoomsAsync(
             PagingOptions pagingOptions,
+            SortOptions<Room, RoomEntity> sortOptions,
             CancellationToken cancellationToken)
         {
             IQueryable<RoomEntity> query = _hotelApiContext.Rooms;
+            query = sortOptions.Apply(query);
 
             var size = await query.CountAsync(cancellationToken);
 

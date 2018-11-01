@@ -10,7 +10,7 @@ namespace testWebAPI.Models.Resources
         public string Name { get; set; }
 
         [Sortable(Default = true)]  // make the rate the default sort property
-        [Searchable]
+        [SearchableDecimal]
         public Decimal Rate { get; set; }
     }
 }

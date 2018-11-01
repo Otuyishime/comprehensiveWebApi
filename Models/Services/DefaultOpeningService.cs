@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using testWebAPI.DBs;
 using testWebAPI.Models.Entities;
@@ -22,11 +23,15 @@ namespace testWebAPI.Models.Services
             _dateLogicService = dateLogicService;
         }
 
-        public async Task<PagedResults<Opening>> GetOpeningsAsync(PagingOptions pagingOptions, CancellationToken cancellationToken)
+        public async Task<PagedResults<Opening>> GetOpeningsAsync(
+            PagingOptions pagingOptions,
+            SortOptions<Opening, OpeningEntity> sortOptions,
+            CancellationToken cancellationToken
+        )
         {
             var rooms = await _context.Rooms.ToArrayAsync();
 
-            var allOpenings = new List<Opening>();
+            var allOpenings = new List<OpeningEntity>();
 
             foreach (var room in rooms)
             {
@@ -50,18 +55,26 @@ namespace testWebAPI.Models.Services
                         Rate = room.Rate,
                         StartAt = slot.StartAt,
                         EndAt = slot.EndAt
-                    })
-                    .Select(model => Mapper.Map<Opening>(model));
+                    });
 
                 allOpenings.AddRange(openings);
             }
 
-            var pagedOpenings = allOpenings.Skip(pagingOptions.Offset.Value).Take(pagingOptions.Limit.Value);
+            var pseudoQuery = allOpenings.AsQueryable();
+            pseudoQuery = sortOptions.Apply(pseudoQuery);
+
+            var size = pseudoQuery.Count();
+
+            var items = pseudoQuery
+                .Skip(pagingOptions.Offset.Value)
+                .Take(pagingOptions.Limit.Value)
+                .ProjectTo<Opening>()
+                .ToArray();
 
             return new PagedResults<Opening>
             {
-                Items = pagedOpenings,
-                TotalSize = allOpenings.Count
+                TotalSize = size,
+                Items = items
             };
         }
 

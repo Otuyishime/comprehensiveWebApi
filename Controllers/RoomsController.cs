@@ -58,6 +58,7 @@ namespace testWebAPI.Controllers
         [HttpGet("openings", Name = nameof(GetAllRoomOpeningsAsync))]
         public async Task<IActionResult> GetAllRoomOpeningsAsync(
             [FromQuery] PagingOptions pagingOptions,
+            [FromQuery] SortOptions<Opening, OpeningEntity> sortOptions,
             CancellationToken cancellationToken
         )
         {
@@ -68,7 +69,7 @@ namespace testWebAPI.Controllers
             pagingOptions.Offset = pagingOptions.Offset ?? _defaultPagingOptions.Offset;
             pagingOptions.Limit = pagingOptions.Limit ?? _defaultPagingOptions.Limit;
 
-            var openings = await _openingService.GetOpeningsAsync(pagingOptions, cancellationToken);
+            var openings = await _openingService.GetOpeningsAsync(pagingOptions, sortOptions, cancellationToken);
             var collection = PagedCollection<Opening>.Create(
                 Link.ToCollection(nameof(GetAllRoomOpeningsAsync)),
                 openings.Items.ToArray(),

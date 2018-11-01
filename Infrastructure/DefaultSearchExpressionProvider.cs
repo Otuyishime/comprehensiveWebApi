@@ -10,8 +10,9 @@ namespace testWebAPI.Infrastructure
 
         public virtual Expression GetComparison(MemberExpression left, string op, ConstantExpression right)
         {
-            if (!op.Equals("eq", StringComparison.OrdinalIgnoreCase))
+            if (!op.Equals("eq", StringComparison.OrdinalIgnoreCase)) {
                 throw new ArgumentException($"Invalid operator '{op}'.");
+            }
 
             return Expression.Equal(left, right);
         }

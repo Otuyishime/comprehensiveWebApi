@@ -12,6 +12,7 @@ namespace testWebAPI.Models.Services
         Task<PagedResults<Opening>> GetOpeningsAsync(
             PagingOptions pagingOptions,
             SortOptions<Opening, OpeningEntity> sortOptions,
+            SearchOptions<Opening, OpeningEntity> searchOptions,
             CancellationToken cancellationToken
         );
 

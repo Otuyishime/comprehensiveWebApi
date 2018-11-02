@@ -26,6 +26,7 @@ namespace testWebAPI.Models.Services
         public async Task<PagedResults<Opening>> GetOpeningsAsync(
             PagingOptions pagingOptions,
             SortOptions<Opening, OpeningEntity> sortOptions,
+            SearchOptions<Opening, OpeningEntity> searchOptions,
             CancellationToken cancellationToken
         )
         {
@@ -61,6 +62,7 @@ namespace testWebAPI.Models.Services
             }
 
             var pseudoQuery = allOpenings.AsQueryable();
+            pseudoQuery = searchOptions.Apply(pseudoQuery);
             pseudoQuery = sortOptions.Apply(pseudoQuery);
 
             var size = pseudoQuery.Count();

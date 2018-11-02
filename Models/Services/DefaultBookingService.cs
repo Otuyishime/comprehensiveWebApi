@@ -56,6 +56,16 @@ namespace testWebAPI.Models.Services
             return id;
         }
 
+        public async Task DeleteBookingAsync(Guid bookingId, CancellationToken cancellationToken)
+        {
+            var booking = await _context.Bookings
+                .SingleOrDefaultAsync(b => b.Id == bookingId, cancellationToken);
+            if (booking == null) return;
+
+            _context.Bookings.Remove(booking);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+
         public async Task<Booking> GetBookingAsync(
             Guid bookingId,
             CancellationToken cancellationToken)

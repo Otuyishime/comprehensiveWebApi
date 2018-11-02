@@ -25,5 +25,15 @@ namespace testWebAPI.Controllers
             var booking = await _bookingService.GetBookingAsync(bookingId, ct);
             return booking == null ? NotFound() : (IActionResult)Ok(booking);
         }
+
+        [HttpDelete("{bookingId}", Name = nameof(DeleteBookingByIdAsync))]
+        public async Task<IActionResult> DeleteBookingByIdAsync(
+            Guid bookingId,
+            CancellationToken ct)
+        {
+            // TODO: Authorize that the user is allowed to delete!
+            await _bookingService.DeleteBookingAsync(bookingId, ct);
+            return NoContent();
+        }
     }
 }

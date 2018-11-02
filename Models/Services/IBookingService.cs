@@ -7,13 +7,15 @@ namespace testWebAPI.Models.Services
 {
     public interface IBookingService
     {
-        Task<Booking> GetBookingAsync(Guid bookingId, CancellationToken ct);
+        Task<Booking> GetBookingAsync(Guid bookingId, CancellationToken cancellationToken);
 
         Task<Guid> CreateBookingAsync(
             Guid userId,
             Guid roomId,
             DateTimeOffset startAt,
             DateTimeOffset endAt,
-            CancellationToken ct);
+            CancellationToken cancellationToken);
+
+        Task DeleteBookingAsync(Guid bookingId, CancellationToken cancellationToken);
     }
 }

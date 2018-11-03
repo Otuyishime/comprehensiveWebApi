@@ -1,5 +1,6 @@
 ﻿using System;
 using testWebAPI.Infrastructure.Attributes;
+using testWebAPI.Models.Forms;
 
 namespace testWebAPI.Models.Resources
 {
@@ -12,5 +13,7 @@ namespace testWebAPI.Models.Resources
         [Sortable(Default = true)]  // make the rate the default sort property
         [SearchableDecimal]
         public Decimal Rate { get; set; }
+
+        public Form Book { get; set; }
     }
 }

@@ -7,8 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using testWebAPI.DBs;
+using testWebAPI.Infrastructure;
 using testWebAPI.Models;
 using testWebAPI.Models.Entities;
+using testWebAPI.Models.Forms;
 using testWebAPI.Models.Resources;
 using testWebAPI.Models.Services;
 
@@ -60,6 +62,12 @@ namespace testWebAPI.Controllers
                 rooms.TotalSize,
                 pagingOptions);
             collection.Openings = Link.ToCollection(nameof(GetAllRoomOpeningsAsync));
+            collection.RoomsQuery = FormMetadata.FromResource<Room>(
+                Link.ToForm(
+                    nameof(GetRoomsAsync), null, 
+                    Link.GetMethod, Form.QueryRelation
+                )
+            );
 
             return Ok(collection);
         }

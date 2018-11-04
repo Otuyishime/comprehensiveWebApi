@@ -6,6 +6,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Versioning;
@@ -43,6 +44,18 @@ namespace testWebAPI
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            // Add mysql db
+            services.AddTransient<AppDb>(_ => new AppDb());
+
+            // Add in-memory db
+            // TODO: Swap this with a real db in production
+            services.AddDbContext<HotelApiContext>(opt => opt.UseInMemoryDatabase(databaseName: "testInMemDb"));
+
+            // Add ASP.NET Core Identity
+            services.AddIdentity<UserEntity, UserRoleEntity>()
+                    .AddEntityFrameworkStores<HotelApiContext>()
+                    .AddDefaultTokenProviders();
+
             // Add AutoMapper
             services.AddAutoMapper(typeof(Startup));
 
@@ -82,13 +95,6 @@ namespace testWebAPI
                 opt.ApiVersionSelector = new CurrentImplementationApiVersionSelector(opt);
             });
 
-            // Add mysql db
-            services.AddTransient<AppDb>(_ => new AppDb());
-
-            // Add in-memory db
-            // TODO: Swap this with a real db in production
-            services.AddDbContext<HotelApiContext>(opt => opt.UseInMemoryDatabase(databaseName: "testInMemDb"));
-
             // use lower case controller names
             services.AddRouting(opt => opt.LowercaseUrls = true);
 
@@ -124,6 +130,13 @@ namespace testWebAPI
                 var scopeFactory = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>();
                 using (var scope = scopeFactory.CreateScope())
                 {
+                    // Add test roles and users
+                    var roleManager = scope.ServiceProvider
+                        .GetRequiredService<RoleManager<UserRoleEntity>>();
+                    var userManager = scope.ServiceProvider
+                        .GetRequiredService<UserManager<UserEntity>>();
+                    AddTestUsers(roleManager, userManager).Wait();
+
                     var dbContext = scope.ServiceProvider.GetRequiredService<HotelApiContext>();
                     var dateLogicService = scope.ServiceProvider.GetRequiredService<IDateLogicService>();
 
@@ -152,6 +165,30 @@ namespace testWebAPI
             {
                 await context.Response.WriteAsync("Something went wrong!");
             });
+        }
+
+        private static async Task AddTestUsers(
+            RoleManager<UserRoleEntity> roleManager,
+            UserManager<UserEntity> userManager)
+        {
+            // Add a test role
+            await roleManager.CreateAsync(new UserRoleEntity("Admin"));
+
+            // Add a test user
+            var user = new UserEntity
+            {
+                Email = "admin@landon.local",
+                UserName = "admin@landon.local",
+                FirstName = "Admin",
+                LastName = "Testerman",
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+
+            await userManager.CreateAsync(user, "Supersecret123!!");
+
+            // Put the user in the admin role
+            await userManager.AddToRoleAsync(user, "Admin");
+            await userManager.UpdateAsync(user);
         }
 
         private static void SeedTestData(HotelApiContext context, IDateLogicService dateLogicService)

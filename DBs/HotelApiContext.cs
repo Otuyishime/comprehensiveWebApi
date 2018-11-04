@@ -1,10 +1,11 @@
 ﻿using System;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using testWebAPI.Models.Entities;
 
 namespace testWebAPI.DBs
 {
-    public class HotelApiContext : DbContext 
+    public class HotelApiContext : IdentityDbContext<UserEntity, UserRoleEntity, Guid>
     {
         public HotelApiContext(DbContextOptions dbContextOptions) : base(dbContextOptions){}
 

@@ -46,6 +46,9 @@ namespace testWebAPI
             // Add AutoMapper
             services.AddAutoMapper(typeof(Startup));
 
+            // Add Response Caching
+            services.AddResponseCaching();
+
             // Initialize mapper
             Mapper.Initialize(mp => mp.AddProfile<MappingProfile>());
 
@@ -140,6 +143,9 @@ namespace testWebAPI
                 opt.Preload();
             });
 
+            // The order here is very important
+            // The response caching middle-ware has to handle the request before MVC
+            app.UseResponseCaching();
             app.UseMvc();
 
             app.Run(async (context) =>

@@ -74,6 +74,9 @@ namespace testWebAPI.Controllers
 
         // GET /rooms/openings
         [HttpGet("openings", Name = nameof(GetAllRoomOpeningsAsync))]
+        // client-cached and cached on server for 30 seconds
+        // Add hints as to which queries cause the data to change
+        [ResponseCache(Duration = 30, VaryByQueryKeys = new[] { "offset", "limit", "orderBy", "search" })]
         public async Task<IActionResult> GetAllRoomOpeningsAsync(
             [FromQuery] PagingOptions pagingOptions,
             [FromQuery] SortOptions<Opening, OpeningEntity> sortOptions,

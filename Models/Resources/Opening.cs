@@ -1,6 +1,7 @@
 ﻿using System;
 using testWebAPI.Infrastructure.Attributes;
 using testWebAPI.Models.Entities;
+using testWebAPI.Models.Forms;
 
 namespace testWebAPI.Models.Resources
 {
@@ -20,5 +21,7 @@ namespace testWebAPI.Models.Resources
         [Sortable]
         [SearchableDecimal]
         public decimal Rate { get; set; }
+
+        public Form Book { get; set; }
     }
 }

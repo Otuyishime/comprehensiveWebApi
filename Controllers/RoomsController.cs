@@ -95,12 +95,18 @@ namespace testWebAPI.Controllers
                 cancellationToken
             );
 
-            var collection = PagedCollection<Opening>.Create(
+            var collection = PagedCollection<Opening>.Create<OpeningsResponse>(
                 Link.ToCollection(nameof(GetAllRoomOpeningsAsync)),
                 openings.Items.ToArray(),
                 openings.TotalSize,
-                pagingOptions
-            );
+                pagingOptions);
+
+            collection.OpeningsQuery = FormMetadata.FromResource<Opening>(
+                Link.ToForm(
+                    nameof(GetAllRoomOpeningsAsync),
+                    null,
+                    Link.GetMethod,
+                    Form.QueryRelation));
 
             return Ok(collection);
         }

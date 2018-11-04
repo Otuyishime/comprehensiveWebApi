@@ -109,6 +109,7 @@ namespace testWebAPI
             services.AddScoped<IOpeningService, DefaultOpeningService>();
             services.AddScoped<IBookingService, DefaultBookingService>();
             services.AddScoped<IDateLogicService, DefaultDateLogicService>();
+            services.AddScoped<IUserService, DefaultUserService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -161,10 +162,10 @@ namespace testWebAPI
             app.UseResponseCaching();
             app.UseMvc();
 
-            app.Run(async (context) =>
-            {
-                await context.Response.WriteAsync("Something went wrong!");
-            });
+            //app.Run(async (context) =>
+            //{
+            //    await context.Response.WriteAsync("Something went wrong!");
+            //});
         }
 
         private static async Task AddTestUsers(

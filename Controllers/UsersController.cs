@@ -1,47 +1,67 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using testWebAPI.Models;
-using testWebAPI.ModelViews;
+using testWebAPI.Models.Entities;
+using testWebAPI.Models.Resources;
+using testWebAPI.Models.Services;
 
 namespace testWebAPI.Controllers
 {
     [Route("api/[controller]")]
-    public class UsersController : ControllerBase
+    public class UsersController : Controller
     {
-        // GET: api/users
-        [HttpGet]
-        public IEnumerable<User> Get()
+        private readonly IUserService _userService;
+        private readonly PagingOptions _defaultPagingOptions;
+
+        public UsersController(
+            IUserService userService,
+            IOptions<PagingOptions> defaultPagingOptions)
         {
-            var userMV = new UsersModelView();
-            return userMV.RetrieveUsers().AsEnumerable();
+            _userService = userService;
+            _defaultPagingOptions = defaultPagingOptions.Value;
         }
 
-        // GET api/users/5
-        [HttpGet("{id}")]
-        public User Get(int id)
+        [HttpGet(Name = nameof(GetVisibleUsersAsync))]
+        public async Task<IActionResult> GetVisibleUsersAsync(
+            [FromQuery] PagingOptions pagingOptions,
+            [FromQuery] SortOptions<User, UserEntity> sortOptions,
+            [FromQuery] SearchOptions<User, UserEntity> searchOptions,
+            CancellationToken cancellationToken)
         {
-            var userMV = new UsersModelView();
-            return userMV.RetrieveUsers().FirstOrDefault(u => u.Id == id);
+            if (!ModelState.IsValid) return BadRequest(new ApiError(ModelState));
+
+            pagingOptions.Offset = pagingOptions.Offset ?? _defaultPagingOptions.Offset;
+            pagingOptions.Limit = pagingOptions.Limit ?? _defaultPagingOptions.Limit;
+
+            // TODO: Authorization check. Is the user an admin?
+
+            // TODO: Return a collection of visible users
+            var users = await _userService.GetUsersAsync(
+                pagingOptions, sortOptions, searchOptions, cancellationToken);
+
+            var collection = PagedCollection<User>.Create(
+                Link.To(nameof(GetVisibleUsersAsync)),
+                users.Items.ToArray(),
+                users.TotalSize,
+                pagingOptions);
+
+            return Ok(collection);
         }
 
-        // POST api/users
-        [HttpPost]
-        public void Post([FromBody]string value)
+        [Authorize]
+        [HttpGet("{userId}", Name = nameof(GetUserByIdAsync))]
+        public Task<IActionResult> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken)
         {
-        }
-
-        // PUT api/users/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
-        {
-        }
-
-        // DELETE api/users/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
+            // TODO is userId the current user's ID?
+            // If so, return myself.
+            // If not, only Admin roles should be able to view arbitrary users.
+            throw new NotImplementedException();
         }
     }
 }

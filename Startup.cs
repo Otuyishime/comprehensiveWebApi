@@ -59,6 +59,13 @@ namespace testWebAPI
                 var jsonOutputFormatter = opt.OutputFormatters.OfType<JsonOutputFormatter>().Single();
                 opt.OutputFormatters.Remove(jsonOutputFormatter);
                 opt.OutputFormatters.Add(new IonOutputFormatter(jsonOutputFormatter));
+
+                // add cache profile for cache-control header
+                // "Static" is a name for any response you want the client to cache
+                opt.CacheProfiles.Add("Static", new CacheProfile
+                {
+                    Duration = 86400 // full day
+                });
             });
 
             // add api versioning

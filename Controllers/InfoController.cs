@@ -23,6 +23,7 @@ namespace testWebAPI.Controllers
 
         // GET: api/values
         [HttpGet(Name = nameof(GetInfo))]
+        [ResponseCache(CacheProfileName = "Static")]
         public IActionResult GetInfo()
         {
             _hotelInfo.Self = Link.To(nameof(GetInfo));

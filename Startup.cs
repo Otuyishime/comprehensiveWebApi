@@ -209,10 +209,10 @@ namespace testWebAPI
             app.UseResponseCaching();
             app.UseMvc();
 
-            app.Run(async (context) =>
-            {
-                await context.Response.WriteAsync("Something went wrong!");
-            });
+            //app.Run(async (context) =>
+            //{
+            //    await context.Response.WriteAsync("Something went wrong!");
+            //});
         }
 
         private static async Task AddTestUsers(

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using testWebAPI.Models.Entities;
@@ -16,5 +17,7 @@ namespace testWebAPI.Models.Services
             CancellationToken cancellationToken);
 
         Task<(bool Succeeded, string Error)> CreateUserAsync(RegisterForm form); // Returning a named tuple
+
+        Task<User> GetUserAsync(ClaimsPrincipal user);
     }
 }

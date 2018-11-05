@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -39,6 +41,12 @@ namespace testWebAPI.Models.Services
             }
 
             return (true, null);
+        }
+
+        public async Task<User> GetUserAsync(ClaimsPrincipal user)
+        {
+            var entity = await _userManager.GetUserAsync(user);
+            return Mapper.Map<User>(entity);
         }
 
         public async Task<PagedResults<User>> GetUsersAsync(

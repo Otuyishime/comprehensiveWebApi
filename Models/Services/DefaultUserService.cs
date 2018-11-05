@@ -6,6 +6,7 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using testWebAPI.Models.Entities;
+using testWebAPI.Models.Forms;
 using testWebAPI.Models.Resources;
 
 namespace testWebAPI.Models.Services
@@ -17,6 +18,27 @@ namespace testWebAPI.Models.Services
         public DefaultUserService(UserManager<UserEntity> userManager)
         {
             _userManager = userManager;
+        }
+
+        public async Task<(bool Succeeded, string Error)> CreateUserAsync(RegisterForm form)
+        {
+            var entity = new UserEntity
+            {
+                Email = form.Email,
+                UserName = form.Email,  // if you want users to have usernames different from email, implement that here
+                FirstName = form.FirstName,
+                LastName = form.LastName,
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+
+            var result = await _userManager.CreateAsync(entity, form.Password);
+            if (!result.Succeeded)
+            {
+                var firstError = result.Errors.FirstOrDefault()?.Description;
+                return (false, firstError);
+            }
+
+            return (true, null);
         }
 
         public async Task<PagedResults<User>> GetUsersAsync(

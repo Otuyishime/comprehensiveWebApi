@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using testWebAPI.Models;
 using testWebAPI.Models.Entities;
+using testWebAPI.Models.Forms;
 using testWebAPI.Models.Resources;
 using testWebAPI.Models.Services;
 
@@ -52,6 +53,24 @@ namespace testWebAPI.Controllers
                 pagingOptions);
 
             return Ok(collection);
+        }
+
+        [HttpPost(Name = nameof(RegisterUserAsync))]
+        public async Task<IActionResult> RegisterUserAsync(
+            [FromBody] RegisterForm form,
+            CancellationToken cancellationToken
+        )
+        {
+            if (!ModelState.IsValid) return BadRequest(new ApiError(ModelState));
+
+            var (succeeded, error) = await _userService.CreateUserAsync(form);
+            if (succeeded) return StatusCode(201); // TODO add an introspection link
+
+            return BadRequest(new ApiError
+            {
+                Message = "Registration failed.",
+                Detail = error
+            });
         }
 
         [Authorize]

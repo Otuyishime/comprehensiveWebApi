@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Primitives;
@@ -15,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using testWebAPI.Data;
+using OpenIddict.Validation;
 using testWebAPI.DBs;
 using testWebAPI.Filters;
 using testWebAPI.Formatters;
@@ -54,6 +53,39 @@ namespace testWebAPI
             { 
                 opt.UseInMemoryDatabase(databaseName: "testInMemDb"); 
                 opt.UseOpenIddict(); // use openIddict for tokens
+            });
+
+            services.AddOpenIddict()
+            // Register the OpenIddict core services.
+            .AddCore(options =>
+            {
+                // Configure OpenIddict to use the EF Core stores/models.
+                options.UseEntityFrameworkCore().UseDbContext<HotelApiContext>();
+            })
+            // Register the OpenIddict server handler.
+            .AddServer(options =>
+            {
+                // Register the ASP.NET Core MVC services used by OpenIddict.
+                // Note: if you don't call this method, you won't be able to
+                // bind OpenIdConnectRequest or OpenIdConnectResponse parameters.
+                options.UseMvc();
+                // Enable the token endpoint.
+                options.EnableTokenEndpoint("/api/token");
+                // Enable the password flow.
+                options.AllowPasswordFlow();
+                // Accept anonymous clients (i.e clients that don't send a client_id).
+                options.AcceptAnonymousClients();
+                //// During development, you can disable the HTTPS requirement.
+                //options.DisableHttpsRequirement();
+            })
+            // Register the OpenIddict validation handler.
+            // Note: the OpenIddict validation handler is only compatible with the
+            // default token format or with reference tokens and cannot be used with
+            // JWT tokens. For JWT tokens, use the Microsoft JWT bearer handler.
+            .AddValidation();
+            services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = OpenIddictValidationDefaults.AuthenticationScheme;
             });
 
             // Map some of the default claim names to the proper OpenID Connect claim names
@@ -209,18 +241,6 @@ namespace testWebAPI
 
         private static void SeedTestData(HotelApiContext context, IDateLogicService dateLogicService)
         {
-            // Add random Data
-            //foreach(var randomData in RandomTestData.GetData())
-            //{
-            //    context.Rooms.Add(new Models.Entities.RoomEntity
-            //    {
-            //        Id = Guid.Parse(randomData.Id),
-            //        Name = randomData.Name,
-            //        Rate = randomData.Rate
-            //    });
-            //}
-            //context.SaveChanges();
-
             var oxford = context.Rooms.Add(new RoomEntity
             {
                 Id = Guid.Parse("301df04d-8679-4b1b-ab92-0a586ae53d08"),

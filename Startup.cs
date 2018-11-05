@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AspNet.Security.OpenIdConnect.Primitives;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -49,7 +50,19 @@ namespace testWebAPI
 
             // Add in-memory db
             // TODO: Swap this with a real db in production
-            services.AddDbContext<HotelApiContext>(opt => opt.UseInMemoryDatabase(databaseName: "testInMemDb"));
+            services.AddDbContext<HotelApiContext>(opt => 
+            { 
+                opt.UseInMemoryDatabase(databaseName: "testInMemDb"); 
+                opt.UseOpenIddict(); // use openIddict for tokens
+            });
+
+            // Map some of the default claim names to the proper OpenID Connect claim names
+            services.Configure<IdentityOptions>(opt =>
+            {
+                opt.ClaimsIdentity.UserNameClaimType = OpenIdConnectConstants.Claims.Name;
+                opt.ClaimsIdentity.UserIdClaimType = OpenIdConnectConstants.Claims.Subject;
+                opt.ClaimsIdentity.RoleClaimType = OpenIdConnectConstants.Claims.Role;
+            });
 
             // Add ASP.NET Core Identity
             services.AddIdentity<UserEntity, UserRoleEntity>()
@@ -157,15 +170,17 @@ namespace testWebAPI
                 opt.Preload();
             });
 
+            app.UseAuthentication();
+
             // The order here is very important
             // The response caching middle-ware has to handle the request before MVC
             app.UseResponseCaching();
             app.UseMvc();
 
-            //app.Run(async (context) =>
-            //{
-            //    await context.Response.WriteAsync("Something went wrong!");
-            //});
+            app.Run(async (context) =>
+            {
+                await context.Response.WriteAsync("Something went wrong!");
+            });
         }
 
         private static async Task AddTestUsers(
